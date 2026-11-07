@@ -1,0 +1,10 @@
+build/
+*.o
+*.d
+*.a
+*.so
+compile_commands.json
+.cache/
+
+# Game binary used by `make test` (not redistributable)
+bin/
