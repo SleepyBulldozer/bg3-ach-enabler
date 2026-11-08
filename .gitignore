@@ -1,10 +1,12 @@
+# Build output (make)
 build/
-*.o
-*.d
-*.a
-*.so
+
+# Game executable used by `make test` and `make analyze` (not redistributable)
+bin/
+
+# Python bytecode
+__pycache__/
+
+# Editor tooling (clangd)
 compile_commands.json
 .cache/
-
-# Game binary used by `make test` (not redistributable)
-bin/

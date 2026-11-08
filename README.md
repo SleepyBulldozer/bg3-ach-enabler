@@ -102,6 +102,25 @@ make
 - If it doesn't pass, the signature needs updating for the new game version. Once it
   passes again, that commit is tagged with the new game version.
 
+### When a game update breaks the signature
+
+`make analyze` finds the mod check again from scratch and updates the signature in
+`src/bg3ach.c` to match. It needs `python3` and `objdump` (from binutils). It starts from the
+game's own achievement commands (`UnlockAchievement` and similar), follows their calls to the
+function that loops over the loaded mods, and builds `MOD_CHECK_SIGNATURE` and
+`CALL_OFFSET_IN_SIGNATURE` from that function's code. Then it writes them into
+`src/bg3ach.c` and runs the offline test.
+
+If the file already has the right values, it is left alone. Otherwise, review the change with
+`git diff src/bg3ach.c` before committing. To see the values without changing anything:
+
+```sh
+tools/bg3ach_analyze.py bin/bg3 --dry-run
+```
+
+If the analysis fails (exit status 1), the game's code has changed shape, and the output shows
+which step failed.
+
 ## Settings
 
 Settings are environment variables. Put them in front of `%command%` in the launch options:
@@ -141,6 +160,7 @@ note on what each does.
 make          # build the library: build/libbg3ach.so
 make test     # offline test against bin/bg3 (or GAME=...)
 make debug    # offline test with extra memory-error checking (ASan + UBSan)
+make analyze  # find the mod check and update its signature in src/bg3ach.c
 make clean    # delete build/
 make help     # list these commands
 ```
@@ -150,5 +170,6 @@ make help     # list these commands
 ```
 src/bg3ach.c          the library (all of the logic lives here)
 tests/test_offline.c  the offline test (make test)
+tools/bg3ach_analyze.py  finds the mod check from scratch and updates the signature (make analyze)
 bin/bg3               your copy of the game executable, for testing (not committed)
 ```

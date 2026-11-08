@@ -3,6 +3,7 @@
 #   make          build the library:            build/libbg3ach.so
 #   make test     check it against the game:    bin/bg3 by default, or GAME=/path/to/bg3
 #   make debug    build the test with memory/undefined-behaviour checks (ASan + UBSan)
+#   make analyze  find the mod check in the game and write its signature into src/bg3ach.c
 #   make clean    delete build/
 #   make help     show this list
 
@@ -19,7 +20,7 @@ TEST    := $(BUILD)/test_offline
 # Example: make test GAME="$HOME/.local/share/Steam/steamapps/common/Baldurs Gate 3/bin/bg3"
 GAME    ?= bin/bg3
 
-.PHONY: all test debug clean help
+.PHONY: all test debug analyze clean help
 
 all: $(LIB)
 
@@ -44,6 +45,11 @@ debug: CFLAGS := -std=c11 -O0 -g -Wall -Wextra -Wpedantic -fsanitize=address,und
 debug: LDFLAGS += -fsanitize=address,undefined
 debug: clean $(TEST)
 
+# Find the mod check in the game from scratch (needs python3 and objdump), update
+# MOD_CHECK_SIGNATURE and CALL_OFFSET_IN_SIGNATURE in src/bg3ach.c, then run the offline test.
+analyze:
+	python3 tools/bg3ach_analyze.py "$(GAME)" --test
+
 $(BUILD):
 	mkdir -p $@
 
@@ -51,4 +57,4 @@ clean:
 	rm -rf $(BUILD)
 
 help:
-	@sed -n '3,7s/^# *//p' $(firstword $(MAKEFILE_LIST))
+	@sed -n '3,8s/^# *//p' $(firstword $(MAKEFILE_LIST))
